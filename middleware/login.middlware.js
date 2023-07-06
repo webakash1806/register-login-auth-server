@@ -1,4 +1,4 @@
-exports.loginMiddleware = (req, res, next) => {
+module.exports.loginMiddleware = (req, res, next) => {
     const { email, password } = req.body
     if (email && password) {
         next()
