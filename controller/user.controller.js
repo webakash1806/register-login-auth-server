@@ -3,6 +3,12 @@ const bcrypt = require('bcrypt')
 
 module.exports.userRegister = async (req, res) => {
     const { name, email, password } = req.body
+    const uniqueEmail = await User.findOne({ email })
+
+    if (uniqueEmail) {
+        res.status(404).json({ message: "User is already registered with this Email" })
+        return;
+    }
     try {
         const protectedPassword = await bcrypt.hash(password, 8)
         const user = new User({ name, email, password: protectedPassword })
@@ -17,12 +23,13 @@ module.exports.userRegister = async (req, res) => {
 module.exports.userlogin = async (req, res) => {
     const { email, password } = req.body
     const uniqueEmail = await User.findOne({ email })
+    if (!uniqueEmail) {
+        res.status(404).json({ message: "No user is registered with this Email" })
+        return;
+    }
     try {
         const matchPassword = await bcrypt.compare(password, uniqueEmail.password)
-        if (!uniqueEmail) {
-            res.status(404).json({ message: "No user is registered with this Email" })
-        }
-        else if (!matchPassword) {
+        if (!matchPassword) {
             res.status(404).json({ message: "Password is incorrect" })
         }
         else {
